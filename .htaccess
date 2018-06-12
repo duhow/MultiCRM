@@ -1,0 +1,23 @@
+RewriteEngine On
+RewriteBase /
+RewriteCond $1 !^(index\.php|resources|robots\.txt)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php/$1 [L]
+
+<IfModule mod_expires.c>
+	ExpiresActive on
+	ExpiresDefault			"access plus 0 seconds"
+
+	ExpiresByType image/gif		"access plus 1 month"
+	ExpiresByType image/png		"access plus 1 month"
+	ExpiresByType image/jpeg	"access plus 1 month"
+	ExpiresByType video/ogg		"access plus 1 month"
+	ExpiresByType audio/ogg		"access plus 1 month"
+	ExpiresByType video/mp4		"access plus 1 month"
+	ExpiresByType video/webm	"access plus 1 month"
+
+	ExpiresByType text/css			"access plus 1 hour"
+	ExpiresByType application/javascript	"access plus 1 hour"
+</IfModule>
+
