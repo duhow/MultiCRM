@@ -5,12 +5,13 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>MultiCRM >> <?= $title; ?></title>
+	<title>MultiCRM<?= (isset($title) ? ' >> ' .$title : ''); ?></title>
 
 	<?php
 	if(!isset($css_files)) {
 		$css_files = [
 			'bootstrap.min.css',
+			'animate.min.css',
 			'fontawesome-all.min.css',
 			'jquery.dataTables.min.css',
 			'summernote-bs4.css'
@@ -45,6 +46,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 	<?php }
 
 	// Add Google Recaptcha if enabled
-	if($this->config->item('captcha')){ ?>
-	<script src="https://www.google.com/recaptcha/api.js"></script>
+	if($this->load->is_loaded('recaptcha')){ ?>
+	<script src="https://www.google.com/recaptcha/api.js?render=explicit&onload=grecaptchaEnable"></script>
 	<?php } ?>
+</head>
+<body>

@@ -13,8 +13,28 @@ class Main extends CI_Controller {
 			// Verify user is active, not blocked
 		}
 
+		if($this->input->post('user') and $this->input->post('pass')){
+			// Check Recaptcha
+			if($this->load->is_loaded('recaptcha') and $this->functions->ip_requires_captcha()){
+				if(!$this->input->post('g-recaptcha-response')){
+					log_message('error', 'Login failed for ['.$_SERVER['REMOTE_ADDR'] .'], missing Recaptcha.');
+					http_response_code(401);
+					die();
+				}
+				$res = $this->Recaptcha->verifyResponse($this->input->post('g-recaptcha-response'));
+				if(!$res){
+					log_message('error', 'Login failed for ['.$_SERVER['REMOTE_ADDR'] .'], failed Recaptcha.');
+					http_response_code(401);
+					die();
+				}
+			}
+
+			http_response_code(402);
+			die();
+		}
+
 		$data = array();
-		if($this->config->item('captcha') and $this->functions->ip_requires_captcha()){
+		if($this->load->is_loaded('recaptcha') and $this->functions->ip_requires_captcha()){
 			$data['captcha'] = TRUE;
 		}
 

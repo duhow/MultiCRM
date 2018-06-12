@@ -5,7 +5,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 	<div class="col-xs-12 mx-auto">
 		<img src="<?= base_url("img/logo.png"); ?>" class="img-fluid">
 	</div>
-	<form method="post" action="<?= base_url("main/login"); ?>" class="card">
+	<form method="post" action="<?= base_url("login"); ?>" class="card">
 		<div class="card-header">
 			<i class="fas fa-user"></i> Iniciar sesión
 		</div>
@@ -18,9 +18,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 				<input class="form-control" type="password" name="pass" value="" placeholder="Contraseña">
 			</div>
 
-			<div class="form-group recaptcha">
-				<div class="g-recaptcha" data-callback="captchaFill" data-sitekey="6Ldoj10UAAAAAA1UKl-0cYCvLEVxA4mIR6uc-LRd"></div>
-			</div>
+			<div class="form-group" id="recaptcha"></div>
 
 			<button class="btn btn-primary btn-block" disabled type="submit">
 				<i class="fas fa-sign-in-alt"></i> Entrar
@@ -30,15 +28,20 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 </main>
 
 <script>
-	var captchaEnabled = <?= (isset($captcha) and $captcha ? 'true' : 'false'); ?>;
+	var captchaEnabled = <?= ($this->load->is_loaded('recaptcha') ? 'true' : "false"); ?>;
+<?php if($this->load->is_loaded('recaptcha')){ ?>
+	var captchaActive = <?= (isset($captcha) ? 'true' : "false"); ?>;
 	function captchaFill(){ $("form input").trigger('keyup'); }
+	function grecaptchaEnable(){ if(captchaEnabled && captchaActive){ return captchaShow(); } }
 	function captchaShow(){
-		var captchaDiv = $('<div>')
-			.addClass("g-recaptcha")
-			.data('callback', 'captchaFill')
-			.data('sitekey', '<?= ($this->config->item('captcha_public_key') ?: ''); ?>');
-		$("div.recaptcha").html(captchaDiv);
+		grecaptcha.render( 'recaptcha', {
+			'sitekey' : '<?= ($this->config->item('recaptcha_key_public') ?: ''); ?>',
+			'theme' : 'light',
+			'callback': 'captchaFill'
+		});
+		$(window).trigger('resize');
 	}
+<?php } ?>
 	
 	$(function() {
 		$("form :input").keyup(function(){
@@ -60,8 +63,6 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 		$(window).resize(function(){ return centerLogin(); });
 		centerLogin();
-
-		if(captchaEnabled){ captchaShow(); }
 
 		$("form").submit(function(e){
 			e.preventDefault();
@@ -93,6 +94,16 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 						$("form input[type=password]").val('');
 						$("form button").removeClass("btn-default").addClass("btn-danger").prop('disabled', true);
 						$("form button i.fas").toggleClass("fa-sign-in-alt fa-sync-alt fa-spin");
+						<?php if($this->load->is_loaded('recaptcha')){ ?>
+						if(captchaEnabled){
+							if(!$('#g-recaptcha-response').length){
+								captchaActive = true;
+								captchaShow();
+							}else{
+								grecaptcha.reset();
+							}
+						}
+						<?php } ?>
 					}, 1000);
 				}
 			});
