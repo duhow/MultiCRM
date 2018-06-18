@@ -8,15 +8,19 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 	<title>MultiCRM<?= (isset($title) ? ' >> ' .$title : ''); ?></title>
 
 	<?php
-	if(!isset($css_files)) {
-		$css_files = [
-			'bootstrap.min.css',
-			'animate.min.css',
-			'fontawesome-all.min.css',
-			'jquery.dataTables.min.css',
-			'summernote-bs4.css'
-		];
-	}
+	if(!isset($css_files)) { $css_files = array(); }
+	$base = [
+		'bootstrap.min.css',
+		'animate.min.css',
+		'fontawesome-all.min.css',
+		'jquery.dataTables.min.css',
+		'summernote-bs4.css'
+	];
+	// Push custom CSS files
+	foreach($css_files as $css){ $base[] = $css; }
+
+	// Use full list
+	$css_files = $base;
 	foreach ($css_files as $css){
 		if(file_exists("include/css/$css")){
 			$css = base_url("include/css/$css");
@@ -25,18 +29,23 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 	<link rel="stylesheet" href="<?= $css; ?>">
 	<?php }
 
-	if(!isset($js_files)) {
-		$js_files = [
-			'jquery.min.js',
-			'bootstrap.min.js',
-			'jquery.dataTables.min.js',
-			'linkify.min.js',
-			'linkify-jquery.min.js',
-			'summernote-bs4.min.js',
-			'summernote-es-ES.js',
-			'summernote-es-ES.js',
-		];
-	}
+	if(!isset($js_files)) { $js_files = array(); }
+	$base = [
+		'jquery.min.js',
+		'bootstrap.min.js',
+		'jquery.dataTables.min.js',
+		'linkify.min.js',
+		'linkify-jquery.min.js',
+		'summernote-bs4.min.js',
+		'summernote-es-ES.js',
+		'intlTelInput.min.js',
+		'moment-with-locales.min.js',
+	];
+	// Push custom JS files
+	foreach($js_files as $js){ $base[] = $js; }
+
+	// Use full list
+	$js_files = $base;
 	foreach ($js_files as $js){
 		if(file_exists("include/js/$js")){
 			$js = base_url("include/js/$js");
@@ -50,4 +59,4 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 	<script src="https://www.google.com/recaptcha/api.js?render=explicit&onload=grecaptchaEnable"></script>
 	<?php } ?>
 </head>
-<body>
+<body class="container-fluid">

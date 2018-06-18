@@ -7,11 +7,26 @@ class Contact extends CI_Controller {
 		$this->load->view('welcome_message');
 	}
 
-	public function view($id){
+	public function view($id = NULL){
+		if($id === NULL){ redirect("../"); }
+		$data['title'] = 'Lista de contactos';
+		$data['css_files'] = ['base.css'];
+
+		$this->load->view('header', $data);
+		$this->load->view('common/navbar');
+		$this->load->view('common/header');
+		$this->load->view('contact/view');
 
 	}
 
-	public function list(){
+	// route via "list"
+	public function list_contacts(){
+		$data['title'] = 'Lista de contactos';
+		$data['css_files'] = ['base.css'];
 
+		$this->load->view('header', $data);
+		$this->load->view('common/navbar');
+		$this->load->view('common/header');
+		$this->load->view('contact/list');
 	}
 }

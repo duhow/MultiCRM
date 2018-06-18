@@ -1,0 +1,61 @@
+html, body{
+	height: 100%;
+	max-height: 100%;
+}
+
+.container-fluid{
+	padding: 0;
+}
+
+header{
+	height: 60px;
+	margin-bottom: 15px;
+}
+
+/* Si nav-redux, imagen usuario md-12 */
+nav.nav.nav-redux{
+	max-width: 50px;
+}
+
+nav.nav.nav-redux .user,
+nav.nav.nav-redux .nav-link span{
+	display: none;
+}
+
+nav.nav{
+	max-width: 220px;
+	float: left;
+	background: #444;
+	border-right: 2px solid grey;
+}
+
+nav.nav a.nav-link{
+	color: white;
+	font-size: 14px;
+}
+
+nav.nav a.nav-link:hover{
+	background: #555;
+}
+
+nav.nav:not(.nav-redux) a.nav-link:hover i{
+	margin-left: 15px;
+}
+
+nav.nav .user{
+	color: white;
+	font-size: 12px;
+}
+
+.fa.fa-venus {
+	color: pink;
+}
+
+.fa.fa-mars {
+	color: cadetblue;
+}
+
+header{
+	background: #CCC;
+	max-height: 100px;
+}

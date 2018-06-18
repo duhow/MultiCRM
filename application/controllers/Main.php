@@ -11,26 +11,37 @@ class Main extends CI_Controller {
 	public function login(){
 		if($this->session->userdata('id')){
 			// Verify user is active, not blocked
+			redirect("/");
 		}
 
 		if($this->input->post('user') and $this->input->post('pass')){
 			// Check Recaptcha
-			if($this->load->is_loaded('recaptcha') and $this->functions->ip_requires_captcha()){
+			$captcha = ($this->load->is_loaded('recaptcha') and $this->functions->ip_requires_captcha());
+			if($captcha){
 				if(!$this->input->post('g-recaptcha-response')){
-					log_message('error', 'Login failed for ['.$_SERVER['REMOTE_ADDR'] .'], missing Recaptcha.');
-					http_response_code(401);
-					die();
+					$this->functions->log_exit(401, 'error', 'Login failed for ['.$_SERVER['REMOTE_ADDR'] .'], missing Recaptcha.');
 				}
-				$res = $this->Recaptcha->verifyResponse($this->input->post('g-recaptcha-response'));
+				$res = $this->recaptcha->verifyResponse($this->input->post('g-recaptcha-response'));
 				if(!$res){
-					log_message('error', 'Login failed for ['.$_SERVER['REMOTE_ADDR'] .'], failed Recaptcha.');
-					http_response_code(401);
-					die();
+					$this->functions->log_exit(401, 'error', 'Login failed for ['.$_SERVER['REMOTE_ADDR'] .'], failed Recaptcha.');
 				}
 			}
 
-			http_response_code(402);
-			die();
+			// Do login
+			$login = $this->functions->login($this->input->post('user', TRUE), $this->input->post('pass'));
+			if(!$login){
+				$this->functions->ip_set_captcha();
+				$this->functions->log_exit(401, 'error', 'Login failed for ['.$_SERVER['REMOTE_ADDR'] .'], invalid login.');
+			}
+
+			// Remove captcha if any and log
+			if($captcha){ $this->functions->ip_set_captcha(FALSE); }
+			log_message('info', "User $login->id logged in from [" .$_SERVER['REMOTE_ADDR'] ."]");
+
+			// Save session
+			$this->session->set_userdata('id', $login->id);
+
+			redirect("/");
 		}
 
 		$data = array();
