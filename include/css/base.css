@@ -8,7 +8,7 @@ html, body{
 }
 
 header{
-	height: 60px;
+	height: 48px;
 	margin-bottom: 15px;
 }
 
@@ -59,3 +59,9 @@ header{
 	background: #CCC;
 	max-height: 100px;
 }
+
+ul#contact-sources li:hover{
+	background: #EEE;
+}
+
+.badge{ white-space: normal; }
