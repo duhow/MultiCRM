@@ -16,10 +16,10 @@
 		</div>
 		<div class="col order-4">
 			<div class="btn-group">
-				<button class="btn btn-outline-secondary">
+				<button class="btn btn-outline-secondary" data-action="contact-prev">
 					<i class="fas fa-caret-left"></i>
 				</button>
-				<button class="btn btn-outline-secondary">
+				<button class="btn btn-outline-secondary" data-action="contact-next">
 					<i class="fas fa-caret-right"></i>
 				</button>
 			</div>
@@ -35,24 +35,53 @@
 						<i class="fas fa-pencil-alt"></i>
 					</div>
 				</div>
-				<div id="contact-profile" class="card-body">
-					<h5 class="card-title">Nombre Apellido Tal</h5>
+				<div class="card-body loading contact-profile">
+					<div class="ph-item">
+						<div class="ph-col-12">
+							<div class="ph-row">
+								<div class="ph-col-6 big"></div>
+								<div class="ph-col-6 big empty"></div>
+							</div>
+							<div class="ph-row">
+								<div class="ph-col-4"></div>
+								<div class="ph-col-8 empty"></div>
+							</div>
+							<div class="ph-row">
+								<div class="ph-col-2"></div>
+								<div class="ph-col-10 empty"></div>
+							</div>
+							<div class="ph-row">
+								<div class="ph-col-4"></div>
+								<div class="ph-col-8 empty"></div>
+							</div>
+							<div class="ph-row">
+								<div class="ph-col-4"></div>
+								<div class="ph-col-8 empty"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div id="contact-profile" class="card-body d-none">
+					<h5 class="card-title" data-type="name"></h5>
 					<ul class="card-text list-unstyled">
 						<li>
-							<i class="fa fa-mars"></i>
-							Hombre, 22 años (1996-09-14)
+							<i class="fa fa-user"></i>
+							<span data-type="gender"></span>
+							<span data-type="birthday"></span>
+							<span class="text-enclosing" data-type="birthdate"></span>
 						</li>
 						<li>
 							<i class="fa fa-map-marker-alt"></i>
-							España (16:04)
+							<span data-type="country"></span>
+							<span class="text-enclosing" data-type="country-time" data-timezone=""></span>
 						</li>
 						<li>
 							<i class="fa fa-id-card"></i>
-							44441234L
+							<span data-type="id_card"></span>
 						</li>
 						<li>
 							<i class="fa fa-calendar-alt"></i>
-							Creado 2018-04-01 16:40
+							<span data-type="date_add"></span>
 						</li>
 					</ul>
 				
@@ -123,6 +152,7 @@ function renderTags(){
 			var tag = $("<a></a>");
 			var color = (t.trim().length % colors.length);
 			tag.addClass("badge badge-" + colors[color]);
+			tag.prop('href', '#');
 			// warning and dark
 			if(color != 4 && color != 6){
 				tag.addClass("text-white");
@@ -134,10 +164,100 @@ function renderTags(){
 	}
 };
 
-$(function(){
-	$("textarea[name=tags]").change( function(){ renderTags() } );
-	renderTags();
+function renderContact(c){
+	var d = $("#contact-profile");
+	$("#contact-profile h5").empty();
+	$("#contact-profile ul li span").each(function(i){
+		$(this).empty();
+	});
+	$("#contact-profile ul li").addClass("d-none");
+	// d.empty();
 
+	if(c.contact.first_name){
+		s = c.contact.first_name + " " + c.contact.last_name;
+		$("#contact-profile [data-type=name]").text(s.trim());
+	}
+
+	if(c.contact.gender || c.contact.birthdate){
+		var s = $("#contact-profile li span[data-type=gender]");
+		s.parent("li").removeClass("d-none");
+		// s.closest("i.fa").removeClass("fa-mars fa-venus");
+
+		if(c.contact.gender == "M"){
+			// s.closest("i").addClass("fa-mars");
+			s.text("Hombre");
+		}else if(c.contact.gender == "F"){
+			// s.closest("i").addClass("fa-venus");
+			s.text("Mujer");
+		}
+
+		var sep = Boolean(c.contact.gender && c.contact.birthdate);
+		s.toggleClass("text-separator", sep);
+
+		if(c.contact.birthdate){
+			moment.locale('es');
+			$("#contact-profile li span[data-type=birthday]").text(moment(c.contact.birthdate).fromNow(true));
+			// moment(c.contact.birthdate).format("DD/MM/YYYY");
+			$("#contact-profile li span[data-type=birthdate]").text(c.contact.birthdate).removeClass("d-none");
+		}else{
+			$("#contact-profile li span[data-type=birthdate]").addClass("d-none");
+		}
+	}
+
+	// ------------
+	if(c.contact.country){
+		s = $("#contact-profile li span[data-type=country]");
+		s.parent("li").removeClass("d-none");
+		s.text(c.contact.country);
+
+		s = $("#contact-profile li span[data-type=country-time]");
+		s.data('timezone', "Europe/Madrid");
+		s.text(moment().tz(s.data('timezone')).format("HH:mm"));
+	}
+
+	// ------------
+	if(c.contact.id_card){
+		s = $("#contact-profile li span[data-type=id_card]");
+		s.parent("li").removeClass("d-none");
+		s.text(c.contact.id_card);
+	}
+
+	// ------------
+	s = $("#contact-profile li span[data-type=date_add]");
+	s.parent("li").removeClass("d-none");
+	s.text(moment(c.contact.date_add).fromNow());
+
+	renderTags();
+	setTimeout(function(){
+		$("#contact-profile").removeClass("d-none");
+		$(".contact-profile.loading").addClass("d-none");
+	}, 100);
+}
+
+function loadContact(id){
+	$("#contact-profile").addClass("d-none");
+	$(".contact-profile.loading").removeClass("d-none");
+
+	$.ajax({
+		url: 'https://' + window.location.hostname + '/api/JzVuGfdeDArfNHSbKDWC3th1/contact/' + id,
+		cache: false,
+		dataType: 'json',
+		success: function(d,s,j){
+			if(d.status == "OK"){ return renderContact(d.data); }
+		}
+	});
+}
+
+$(function(){
+	var contactid = window.location.pathname.match(/contact\/view\/(\d+)\/?/);
+	if(contactid){
+		contactid = contactid[1];
+		loadContact(contactid);
+	}
+
+	$("textarea[name=tags]").change( function(){ renderTags() } );
+
+	// Display input new tag
 	$("#contact-tags").on('dblclick', function(e){
 		// Only on div, not tags.
 		if(e.target.tagName === "A"){ return; }
@@ -145,6 +265,7 @@ $(function(){
 		$("#contact-tags-add input").focus();
 	});
 
+	// Delete tag
 	$('body').on('dblclick', "#contact-tags-list a", function(e){
 		var tag = $(this).text();
 		$("#contact-tags-add input").val(tag);
@@ -156,10 +277,14 @@ $(function(){
 		renderTags();
 	});
 
+	// If keypress ENTER on input tag
 	$("#contact-tags-add input").on('keypress', function(e){
-		// Si pulsa Enter, 
-		// $("#contact-tags-add button").trigger('click');
+		if(e.which == 13){
+			$("#contact-tags-add button").trigger('click');
+		}
 	});
+
+	// Add new tag
 	$("#contact-tags-add button").on('click', function(e){
 		var tag = $("#contact-tags-add input").val().trim();
 		if(tag.length < 1){ return; }
@@ -170,6 +295,20 @@ $(function(){
 		$("textarea[name=tags]").html(tags);
 		$("#contact-tags-add input").val("");
 		renderTags();
+	});
+
+	// Navigation buttons
+	$("body").on('click', "button[data-action]", function(e){
+		newid = contactid;
+		// console.log(newid);
+		if($(this).data('action') == "contact-prev"){
+			newid -= 1;
+		}else if($(this).data('action') == "contact-next"){
+			newid += 1;
+		}
+		contactid = newid;
+		window.history.pushState('contact-' + newid, null, './' + contactid);
+		loadContact(contactid);
 	});
 });
 </script>

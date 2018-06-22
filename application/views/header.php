@@ -14,7 +14,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 		'animate.min.css',
 		'fontawesome-all.min.css',
 		'jquery.dataTables.min.css',
-		'summernote-bs4.css'
+		'summernote-bs4.css',
+		'placeholder-loading.css'
 	];
 	// Push custom CSS files
 	foreach($css_files as $css){ $base[] = $css; }
@@ -40,6 +41,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 		'summernote-es-ES.js',
 		'intlTelInput.min.js',
 		'moment-with-locales.min.js',
+		'moment-timezone-with-data-2012-2022.min.js',
 	];
 	// Push custom JS files
 	foreach($js_files as $js){ $base[] = $js; }

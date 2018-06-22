@@ -4,6 +4,11 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 $route['login'] = 'main/login';
 $route['contact/list'] = 'contact/list_contacts';
 
+// API, remove TOKEN from route.
+$route['api/(:any)'] = 'api/index/$1';
+$route['api/(:any)/(:any)'] = 'api/$2';
+$route['api/(:any)/(:any)/(:any)'] = 'api/$2/$3';
+
 $route['default_controller'] = 'main';
 
 $route['404_override'] = '';
