@@ -87,10 +87,21 @@
 				
 				</div>
 				<ul id="contact-sources" class="list-group list-group-flush list-unstyled">
-					<li id="contact-tags" class="list-group-item">
+					<li class="list-group-item" id="contact-tags" data-source-type="tags">
 						<textarea class="form-control d-none" name="tags">Campus Espanyol, Scouting, No interesado, </textarea>
-						<div id="contact-tags-list">
-							No hay etiquetas.
+						<div id="contact-tags-list"></div>
+						<div class="loading contact-tags-list">
+							<div class="ph-item">
+								<div class="ph-col-12">
+									<div class="ph-row">
+										<div class="ph-col-12"></div>
+									</div>
+									<div class="ph-row">
+										<div class="ph-col-8"></div>
+										<div class="ph-col-4 empty"></div>
+									</div>
+								</div>
+							</div>
 						</div>
 						<div id="contact-tags-add" class="input-group input-group-sm mt-2 d-none">
 							<input type="text" class="form-control" placeholder="Etiqueta" maxlength="100">
@@ -227,16 +238,55 @@ function renderContact(c){
 	s.parent("li").removeClass("d-none");
 	s.text(moment(c.contact.date_add).fromNow());
 
-	renderTags();
+	if(c.tags){
+		$("#contact-tags textarea").text(c.tags.join(', ')).val(c.tags.join(', '));
+		renderTags();
+	}else{
+		$("#contact-tags textarea").text("").val("");
+		renderTags();
+		$("#contact-tags-list").text("No hay etiquetas.");
+	}
+	// ------------
+
 	setTimeout(function(){
 		$("#contact-profile").removeClass("d-none");
 		$(".contact-profile.loading").addClass("d-none");
+
+		$("#contact-tags-list").removeClass("d-none");
+		$(".contact-tags-list.loading").addClass("d-none");
 	}, 100);
+}
+
+function renderSource(s, type){
+	var icons = {
+		'email': 'envelope',
+		'mobile': 'mobile-alt',
+		'phone': 'phone'
+	};
+
+	var t = $('<li class="list-group-item"></li>');
+	t.data('source-type', type);
+
+	var x = $('<i class="fa"></i>');
+	x.addClass("fa-" + icons[type]);
+	t.append(x);
+
+	x = $('<a></a>');
+	if(type == 'email'){
+		x.attr('href', 'mailto:' + s[type]);
+	}
+	x.text(s[type]);
+	t.append(x);
+
+	return t;
 }
 
 function loadContact(id){
 	$("#contact-profile").addClass("d-none");
 	$(".contact-profile.loading").removeClass("d-none");
+
+	$("#contact-tags-list").addClass("d-none");
+	$(".contact-tags-list.loading").removeClass("d-none");
 
 	$.ajax({
 		url: 'https://' + window.location.hostname + '/api/JzVuGfdeDArfNHSbKDWC3th1/contact/' + id,
@@ -248,11 +298,28 @@ function loadContact(id){
 	});
 }
 
+function getCurrentContactURL(){
+	var id = window.location.pathname.match(/contact\/view\/(\d+)\/?/);
+	if(id){
+		return parseInt(id[1]);
+	}
+	return false;
+}
+
+window.onpopstate = function (event) {
+	  if (event.state) {
+		// history changed because of pushState/replaceState
+		console.log("state poped!");
+		loadContact(getCurrentContactURL());
+	  } else {
+		// history changed because of a page load
+		console.log("time machine!");
+	  }
+}
+
 $(function(){
-	var contactid = window.location.pathname.match(/contact\/view\/(\d+)\/?/);
-	if(contactid){
-		contactid = contactid[1];
-		loadContact(contactid);
+	if(getCurrentContactURL()){
+		loadContact(getCurrentContactURL());
 	}
 
 	$("textarea[name=tags]").change( function(){ renderTags() } );
@@ -299,16 +366,14 @@ $(function(){
 
 	// Navigation buttons
 	$("body").on('click', "button[data-action]", function(e){
-		newid = contactid;
-		// console.log(newid);
+		var id = getCurrentContactURL();
 		if($(this).data('action') == "contact-prev"){
-			newid -= 1;
+			id = Math.max(id - 1, 1);
 		}else if($(this).data('action') == "contact-next"){
-			newid += 1;
+			id = (id + 1);
 		}
-		contactid = newid;
-		window.history.pushState('contact-' + newid, null, './' + contactid);
-		loadContact(contactid);
+		window.history.pushState('contact-' + id, null, './' + id);
+		loadContact(id);
 	});
 });
 </script>
