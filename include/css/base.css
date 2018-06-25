@@ -67,6 +67,9 @@ ul#contact-sources li:hover{
 .badge{ white-space: normal; }
 #contact-tags{ min-height: 50px; }
 
+#contact-profile ul li .fa,
+#contact-sources .contact-source .fa{ min-width: 24px; }
+
 .text-separator::after{ content: ', '; }
 
 .text-enclosing::before{ content: '('; }
