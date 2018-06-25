@@ -39,9 +39,12 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 		'linkify-jquery.min.js',
 		'summernote-bs4.min.js',
 		'summernote-es-ES.js',
+		'intlTelInput.utils.js',
 		'intlTelInput.min.js',
 		'moment-with-locales.min.js',
 		'moment-timezone-with-data-2012-2022.min.js',
+
+		'crm.js',
 	];
 	// Push custom JS files
 	foreach($js_files as $js){ $base[] = $js; }

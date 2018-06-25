@@ -88,7 +88,7 @@
 				</div>
 				<ul id="contact-sources" class="list-group list-group-flush list-unstyled">
 					<li class="list-group-item" id="contact-tags" data-source-type="tags">
-						<textarea class="form-control d-none" name="tags">Campus Espanyol, Scouting, No interesado, </textarea>
+						<textarea class="form-control d-none" name="tags"></textarea>
 						<div id="contact-tags-list"></div>
 						<div class="loading contact-tags-list">
 							<div class="ph-item">
@@ -112,21 +112,11 @@
 							</div>
 						</div>
 					</li>
-					<li class="list-group-item">
-						<i class="fa fa-envelope"></i>
-						<span>micorreo@ejemplo.com</span>
-						<span class="badge badge-pill badge-primary float-right">5</span>
-					</li>
-					<li class="list-group-item">
-						<i class="fa fa-mobile-alt"></i>
-						<a href="#">+54 112 745 615</a>
-						<span class="badge badge-pill badge-warning float-right">2</span>
-					</li>
-					<li class="list-group-item">
+					<!-- <li class="list-group-item contact-source">
 						<i class="fa fa-phone"></i>
 						<a href="#">+34 901 247 621</a>
 						<span class="badge badge-pill badge-success float-right">3</span>
-					</li>
+					</li> -->
 				</ul>
 			</div>
 		</div>
@@ -153,176 +143,31 @@
 </main>
 
 <script>
-function renderTags(){
-	var tags = $("textarea[name=tags]").val().split(',');
-	if(tags.length > 0){
-		$("#contact-tags-list").empty();
-		var colors = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'];
-		tags.forEach(function(t){
-			if(t.trim().length <= 1){ return; }
-			var tag = $("<a></a>");
-			var color = (t.trim().length % colors.length);
-			tag.addClass("badge badge-" + colors[color]);
-			tag.prop('href', '#');
-			// warning and dark
-			if(color != 4 && color != 6){
-				tag.addClass("text-white");
-			}
-			tag.text(t.trim());
-			$("#contact-tags-list").append(tag);
-			$("#contact-tags-list").append(" ");
-		});
-	}
-};
-
-function renderContact(c){
-	var d = $("#contact-profile");
-	$("#contact-profile h5").empty();
-	$("#contact-profile ul li span").each(function(i){
-		$(this).empty();
-	});
-	$("#contact-profile ul li").addClass("d-none");
-	// d.empty();
-
-	if(c.contact.first_name){
-		s = c.contact.first_name + " " + c.contact.last_name;
-		$("#contact-profile [data-type=name]").text(s.trim());
-	}
-
-	if(c.contact.gender || c.contact.birthdate){
-		var s = $("#contact-profile li span[data-type=gender]");
-		s.parent("li").removeClass("d-none");
-		// s.closest("i.fa").removeClass("fa-mars fa-venus");
-
-		if(c.contact.gender == "M"){
-			// s.closest("i").addClass("fa-mars");
-			s.text("Hombre");
-		}else if(c.contact.gender == "F"){
-			// s.closest("i").addClass("fa-venus");
-			s.text("Mujer");
-		}
-
-		var sep = Boolean(c.contact.gender && c.contact.birthdate);
-		s.toggleClass("text-separator", sep);
-
-		if(c.contact.birthdate){
-			moment.locale('es');
-			$("#contact-profile li span[data-type=birthday]").text(moment(c.contact.birthdate).fromNow(true));
-			// moment(c.contact.birthdate).format("DD/MM/YYYY");
-			$("#contact-profile li span[data-type=birthdate]").text(c.contact.birthdate).removeClass("d-none");
-		}else{
-			$("#contact-profile li span[data-type=birthdate]").addClass("d-none");
-		}
-	}
-
-	// ------------
-	if(c.contact.country){
-		s = $("#contact-profile li span[data-type=country]");
-		s.parent("li").removeClass("d-none");
-		s.text(c.contact.country);
-
-		s = $("#contact-profile li span[data-type=country-time]");
-		s.data('timezone', "Europe/Madrid");
-		s.text(moment().tz(s.data('timezone')).format("HH:mm"));
-	}
-
-	// ------------
-	if(c.contact.id_card){
-		s = $("#contact-profile li span[data-type=id_card]");
-		s.parent("li").removeClass("d-none");
-		s.text(c.contact.id_card);
-	}
-
-	// ------------
-	s = $("#contact-profile li span[data-type=date_add]");
-	s.parent("li").removeClass("d-none");
-	s.text(moment(c.contact.date_add).fromNow());
-
-	if(c.tags){
-		$("#contact-tags textarea").text(c.tags.join(', ')).val(c.tags.join(', '));
-		renderTags();
-	}else{
-		$("#contact-tags textarea").text("").val("");
-		renderTags();
-		$("#contact-tags-list").text("No hay etiquetas.");
-	}
-	// ------------
-
-	setTimeout(function(){
-		$("#contact-profile").removeClass("d-none");
-		$(".contact-profile.loading").addClass("d-none");
-
-		$("#contact-tags-list").removeClass("d-none");
-		$(".contact-tags-list.loading").addClass("d-none");
-	}, 100);
-}
-
-function renderSource(s, type){
-	var icons = {
-		'email': 'envelope',
-		'mobile': 'mobile-alt',
-		'phone': 'phone'
-	};
-
-	var t = $('<li class="list-group-item"></li>');
-	t.data('source-type', type);
-
-	var x = $('<i class="fa"></i>');
-	x.addClass("fa-" + icons[type]);
-	t.append(x);
-
-	x = $('<a></a>');
-	if(type == 'email'){
-		x.attr('href', 'mailto:' + s[type]);
-	}
-	x.text(s[type]);
-	t.append(x);
-
-	return t;
-}
-
-function loadContact(id){
-	$("#contact-profile").addClass("d-none");
-	$(".contact-profile.loading").removeClass("d-none");
-
-	$("#contact-tags-list").addClass("d-none");
-	$(".contact-tags-list.loading").removeClass("d-none");
-
-	$.ajax({
-		url: 'https://' + window.location.hostname + '/api/JzVuGfdeDArfNHSbKDWC3th1/contact/' + id,
-		cache: false,
-		dataType: 'json',
-		success: function(d,s,j){
-			if(d.status == "OK"){ return renderContact(d.data); }
-		}
-	});
-}
-
-function getCurrentContactURL(){
-	var id = window.location.pathname.match(/contact\/view\/(\d+)\/?/);
-	if(id){
-		return parseInt(id[1]);
-	}
-	return false;
-}
-
 window.onpopstate = function (event) {
 	  if (event.state) {
 		// history changed because of pushState/replaceState
-		console.log("state poped!");
-		loadContact(getCurrentContactURL());
+		// console.log("state poped!");
+		CRM.Contact.load(CRM.Contact.getCurrentURL());
 	  } else {
 		// history changed because of a page load
-		console.log("time machine!");
+		// When anchor action (#)
+		// console.log("time machine!");
 	  }
 }
 
 $(function(){
-	if(getCurrentContactURL()){
-		loadContact(getCurrentContactURL());
+	// Load
+	CRM.displayCountry("es");
+	moment.locale(CRM.Language);
+
+	if(CRM.Contact.getCurrentURL()){
+		setTimeout(function(){
+			CRM.Contact.load(CRM.Contact.getCurrentURL());
+			CRM.Contact.updateMoments();
+		}, 150);
 	}
 
-	$("textarea[name=tags]").change( function(){ renderTags() } );
+	$("textarea[name=tags]").change( function(){ CRM.Contact.renderTags() } );
 
 	// Display input new tag
 	$("#contact-tags").on('dblclick', function(e){
@@ -338,10 +183,10 @@ $(function(){
 		$("#contact-tags-add input").val(tag);
 		var tags = $("textarea[name=tags]").val();
 		tags = tags.replace(tag + ", ", "");
-		console.log(tags);
+		// console.log(tags);
 		$("textarea[name=tags]").val(tags);
 		$("textarea[name=tags]").html(tags);
-		renderTags();
+		CRM.Contact.renderTags();
 	});
 
 	// If keypress ENTER on input tag
@@ -361,19 +206,19 @@ $(function(){
 		$("textarea[name=tags]").val(tags);
 		$("textarea[name=tags]").html(tags);
 		$("#contact-tags-add input").val("");
-		renderTags();
+		CRM.Contact.renderTags();
 	});
 
 	// Navigation buttons
 	$("body").on('click', "button[data-action]", function(e){
-		var id = getCurrentContactURL();
+		var id = CRM.Contact.getCurrentURL();
 		if($(this).data('action') == "contact-prev"){
 			id = Math.max(id - 1, 1);
 		}else if($(this).data('action') == "contact-next"){
 			id = (id + 1);
 		}
 		window.history.pushState('contact-' + id, null, './' + id);
-		loadContact(id);
+		CRM.Contact.load(id);
 	});
 });
 </script>
