@@ -211,7 +211,8 @@ var CRM = {
 			s.text(moment(c.contact.date_add).fromNow());
 		
 			if(c.tags){
-				$("#contact-tags textarea").text(c.tags.join(', ')).val(c.tags.join(', '));
+				var tags = c.tags.join(', ') + ', ';
+				$("#contact-tags textarea").text(tags).val(tags);
 				CRM.Contact.renderTags();
 			}else{
 				$("#contact-tags textarea").text("").val("");
