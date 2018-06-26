@@ -69,6 +69,7 @@ ul#contact-sources li:hover{
 
 #contact-profile ul li .fa,
 #contact-sources .contact-source .fa{ min-width: 24px; }
+#contact-sources .contact-source{ padding: 8px 20px; }
 
 .text-separator::after{ content: ', '; }
 
