@@ -57,13 +57,10 @@ class Api extends CI_Controller {
 	private function contact_get_all($id){
 		$mtime = microtime(TRUE);
 
-		$query = $this->db
-			->where('id', $id)
-		->get('contact');
-
+		$contactinfo = $this->functions->get_contact_basic($id);
 		$contact = array();
 
-		if($query->num_rows() == 0){
+		if(!$contactinfo){
 			$json = ['status' => 'ERROR', 'data' => 'NOT_FOUND'];
 			$json = json_encode($json);
 			http_response_code(404);
@@ -72,64 +69,37 @@ class Api extends CI_Controller {
 		}
 
 		// TODO Add timezone based on country or manual set TZ.
-		$contact['contact'] = $query->row_array();
+		$contact['contact'] = $contactinfo;
 
 		// ----------------------
 
-		$query = $this->db
-			->where('contactid', $id)
-			->order_by('priority')
-		->get('contact_source_phone');
-
-		if($query->num_rows() > 0){
-			foreach($query->result() as $row){
-				$data = [
-					'type' => $row->type,
-					'country' => $row->country,
-					'phone' => $row->phone,
-					'extension' => $row->extension,
-					'verified' => (bool) $row->verified,
-				];
-				if($row->last_date){
-					$data['last'] = [
-						$row->last_date,
-						$row->last_user
-					];
-				}
-				$contact['sources']['phone'][] = $data;
-			}
+		$phones = $this->functions->get_contact_phones($id);
+		if($phones){
+			$contact['sources']['phone'] = $phones;
 		}
 		
 		// ----------------------
 
-		$query = $this->db
-			->where('contactid', $id)
-			->order_by('priority')
-		->get('contact_source_email');
-
-		if($query->num_rows() > 0){
-			foreach($query->result() as $row){
-				$data = [
-					'type' =>  $row->type,
-					'email' => $row->email,
-					'verified' => (bool) $row->verified,
-					'subscribed' => (bool) $row->subscribed,
-				];
-				$contact['sources']['email'][] = $data;
-			}
+		$emails = $this->functions->get_contact_emails($id);
+		if($emails){
+			$contact['sources']['email'] = $emails;
 		}
 		
 		// ----------------------
 
-		$query = $this->db
-			->select('tag')
-			->where('contactid', $id)
-			->order_by('tag')
-		->get('contact_tags');
-
-		if($query->num_rows() > 0){
-			$contact['tags'] = array_column($query->result_array(), 'tag');
+		$tags = $this->functions->get_contact_tags($id);
+		if($tags){
+			$contact['tags'] = $tags;
 		}
+
+		// ----------------------
+
+		$tasks = $this->functions->get_contact_tasks($id);
+		if($tasks){
+			$contact['tasks'] = $tasks;
+		}
+
+		// ----------------------
 
 		$mtime = floor((microtime(TRUE) - $mtime) * 100000);
 		$json = ['status' => 'OK', 'data' => $contact, 'time' => $mtime];

@@ -60,4 +60,96 @@ class Functions extends CI_Model {
 
 		return $user;
 	}
+
+	public function get_contact_basic($id){
+		$query = $this->db
+			->where('id', $id)
+		->get('contact');
+
+		if($query->num_rows() == 0){ return FALSE; }
+		return $query->row_array();
+	}
+
+	public function get_contact_phones($id){
+		$query = $this->db
+			->where('contactid', $id)
+			->order_by('priority')
+		->get('contact_source_phone');
+
+		if($query->num_rows() == 0){ return array(); }
+		$phones = array();
+		foreach($query->result() as $row){
+			$data = [
+				'type' => $row->type,
+				'country' => $row->country,
+				'phone' => $row->phone,
+				'extension' => $row->extension,
+				'verified' => (bool) $row->verified,
+			];
+			if($row->last_date){
+				$data['last'] = [
+					$row->last_date,
+					$row->last_user
+				];
+			}
+			$phones[] = $data;
+		}
+		return $phones;
+	}
+
+	public function get_contact_emails($id){
+		$query = $this->db
+			->where('contactid', $id)
+			->order_by('priority')
+		->get('contact_source_email');
+
+		if($query->num_rows() == 0){ return array(); }
+		$emails = array();
+		foreach($query->result() as $row){
+			$data = [
+				'type' =>  $row->type,
+				'email' => $row->email,
+				'verified' => (bool) $row->verified,
+				'subscribed' => (bool) $row->subscribed,
+			];
+			$emails[] = $data;
+		}
+		return $emails;
+	}
+
+	public function get_contact_tags($id){
+		$query = $this->db
+			->select('tag')
+			->where('contactid', $id)
+			->order_by('tag')
+		->get('contact_tags');
+
+		if($query->num_rows() == 0){ return array(); }
+		return array_column($query->result_array(), 'tag');
+	}
+
+	public function get_contact_tasks($id, $finished = FALSE){
+		if(!$finished){
+			$this->db->where('date_completed IS NULL');
+		}
+		$query = $this->db
+			->where('contactid', $id)
+			->order_by('date_add')
+		->get('contact_tasks');
+			if($query->num_rows() == 0){ return array(); }
+
+		$tasks = array();
+		foreach($query->result() as $task){
+			$tasks[] = [
+				'id' => $task->id,
+				'user' => $task->user,
+				'task' => $task->task,
+				'priority' => $task->priority,
+				'date_add' => $task->date_add,
+				'date_completed' => $task->date_completed,
+				'date_pending' => $task->date_pending
+			];
+		}
+		return $tasks;
+	}
 }
