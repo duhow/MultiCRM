@@ -1,5 +1,5 @@
 <?php defined('BASEPATH') OR exit('No direct script access allowed'); ?>
-<nav class="nav nav-redux flex-column nav-pills w-100 h-100 mh-100">
+<nav class="nav nav-redux flex-column nav-pills d-none d-sm-block">
 	<div class="row no-gutters">
 		<div class="col-md-12 col-xs-12">
 			<img class="img-fluid" src="http://via.placeholder.com/150x150">
@@ -21,3 +21,10 @@
 		<span>Llamadas</span>
 	</a>
 </nav>
+<script>
+$(function(){
+	$(window).resize(function(){
+		$("nav.nav").height($("html").height());
+	}).trigger('resize');
+});
+</script>
