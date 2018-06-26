@@ -124,7 +124,7 @@ var CRM = {
 			setTimeout(CRM.Contact.updateMoments, 1000);
 		},
 
-		renderContact: function(c){
+		renderContact: function(c, hide){
 			var d = $("#contact-profile");
 			$("#contact-profile h5").empty();
 			$("#contact-profile ul li span").each(function(i){
@@ -133,6 +133,7 @@ var CRM = {
 			});
 			$("#contact-profile ul li").addClass("d-none");
 			// d.empty();
+			$("#contact-sources li.contact-source").remove();
 		
 			if(c.contact.first_name){
 				s = c.contact.first_name + " " + c.contact.last_name;
@@ -225,7 +226,10 @@ var CRM = {
 					if(c.sources[sType]){
 						for(var sIdx in c.sources[sType]){
 							var sr = CRM.Contact.renderSource(c.sources[sType][sIdx], sType);
-							sr.addClass("d-none");
+							// HACK Hide only if asked
+							if(typeof hide === 'undefined' || hide){
+								sr.addClass("d-none");
+							}
 							$("#contact-sources").append(sr);
 						};
 					}
@@ -310,18 +314,52 @@ var CRM = {
 			return t;
 		},
 		
-		load: function(id){
+		load: function(id, hide){
+			if(typeof hide === 'undefined' || hide){
+				CRM.Contact.sectionsHide();
+				$("#contact-sources li.contact-source").remove();
+			}
+
+			CRM.API.Get('contact/' + id, function(d){
+				if(d.status == "OK"){ return CRM.Contact.renderContact(d.data, hide); }
+			});
+		},
+
+		refreshTimeout: null,
+		refresh: function(){
+			var id = CRM.Contact.getCurrentURL();
+			return CRM.Contact.load(id, false);
+		},
+
+		autoRefresh: function(enable, secs){
+			clearTimeout(CRM.Contact.refreshTimeout);
+			// Disable autorefresh
+			if(typeof enable !== 'undefined' && !enable){
+				return false;
+			}
+			// If no fixed seconds specified
+			var secspass = true;
+			if(typeof secs === 'undefined'){
+				// 7-15s
+				secs = Math.floor(Math.random() * 8) + 7;
+				secspass = false;
+			}
+			CRM.Contact.refreshTimeout = setTimeout(function(){
+				CRM.Contact.refresh();
+				if(secspass){
+					CRM.Contact.autoRefresh(enable, secs);
+				}else{
+					CRM.Contact.autoRefresh(enable);
+				}
+			}, secs * 1000);
+		},
+
+		sectionsHide: function(){
 			$("#contact-profile").addClass("d-none");
 			$(".contact-profile.loading").removeClass("d-none");
 		
 			$("#contact-tags-list").addClass("d-none");
 			$(".contact-tags-list.loading").removeClass("d-none");
-			
-			$("#contact-sources li.contact-source").remove();
-
-			CRM.API.Get('contact/' + id, function(d){
-				if(d.status == "OK"){ return CRM.Contact.renderContact(d.data); }
-			});
 		},
 		
 		getCurrentURL: function(){
