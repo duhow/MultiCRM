@@ -49,9 +49,45 @@ class Api extends CI_Controller {
 	}
 
 	public function contact($id = NULL, $type = NULL){
-		if(empty($type)){
+		// GET contact/id
+		if($this->input->method(TRUE) == "GET" and is_numeric($id) and empty($type)){
 			return $this->contact_get_all($id);
 		}
+
+		// HEAD contact/id
+		if($this->input->method(TRUE) == "HEAD" and is_numeric($id) and empty($type)){
+			return $this->contact_get_all($id);
+		}
+
+		// DELETE contact/id/tag
+		if($this->input->method(TRUE) == "DELETE" and is_numeric($id) and $type == "tag"){
+			return $this->contact_delete_tags($id);
+		}
+	}
+
+	private function contact_delete_tags($id, $tags = NULL){
+		if(empty($tags)){ $tags = file_get_contents('php://input'); }
+		if(!$tags){
+			http_response_code(400);
+			return FALSE;
+		}
+
+		$tags = json_decode($tags);
+
+		if(!$tags or count($tags) == 0){
+			http_response_code(400);
+			return FALSE;
+		}
+
+		$res = $this->functions->delete_contact_tags($id, $tags);
+
+		if(!$res){
+			http_response_code(500);
+			return FALSE;
+		}
+
+		if($this->db->affected_rows() == 0){ http_response_code(204); }
+		return TRUE;
 	}
 
 	private function contact_get_all($id){

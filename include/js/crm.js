@@ -1,17 +1,33 @@
 var CRM = {
 	API: {
-		Get: function(action, cbSuccess, cbError){
+		URL: function(){
 			var wl = window.location;
-			var nurl = wl.protocol + '//' + wl.hostname + '/api/' + CRM.API.Token + '/' + action;
+			return wl.protocol + '//' + wl.hostname + '/api/' + CRM.API.Token + '/';
+		},
 
+		Get: function(action, cbSuccess, cbError){
 			$.ajax({
-				url: nurl,
+				url: CRM.API.URL() + action,
 				cache: false,
 				dataType: 'json',
 				success: cbSuccess,
 				error: cbError
 			});
 		},
+
+		Delete: function(action, data, cbSuccess, cbError){
+			$.ajax({
+				url: CRM.API.URL() + action,
+				method: 'DELETE',
+				cache: false,
+				contentType: 'application/json',
+				data: data,
+				dataType: 'json',
+				success: cbSuccess,
+				error: cbError
+			});
+		},
+
 		Token: 'JzVuGfdeDArfNHSbKDWC3th1'
 	},
 
@@ -213,10 +229,10 @@ var CRM = {
 			if(c.tags){
 				var tags = c.tags.join(', ') + ', ';
 				$("#contact-tags textarea").text(tags).val(tags);
-				CRM.Contact.renderTags();
+				CRM.Contact.tags.render();
 			}else{
 				$("#contact-tags textarea").text("").val("");
-				CRM.Contact.renderTags();
+				CRM.Contact.tags.render();
 				$("#contact-tags-list").text("No hay etiquetas.");
 			}
 			// ------------
@@ -246,28 +262,6 @@ var CRM = {
 				
 				$("#contact-sources li.contact-source").removeClass("d-none");
 			}, 100);
-		},
-
-		renderTags: function(){
-			var tags = $("textarea[name=tags]").val().split(',');
-			if(tags.length > 0){
-				$("#contact-tags-list").empty();
-				var colors = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'];
-				tags.forEach(function(t){
-					if(t.trim().length <= 1){ return; }
-					var tag = $("<a></a>");
-					var color = (t.trim().length % colors.length);
-					tag.addClass("badge badge-" + colors[color]);
-					tag.prop('href', '#');
-					// warning and dark
-					if(color != 4 && color != 6){
-						tag.addClass("text-white");
-					}
-					tag.text(t.trim());
-					$("#contact-tags-list").append(tag);
-					$("#contact-tags-list").append(" ");
-				});
-			}
 		},
 
 		renderSource: function(s, type){
@@ -313,6 +307,61 @@ var CRM = {
 			t.append(x);
 		
 			return t;
+		},
+
+		tags: {
+			delete: function(tags){
+				if(typeof tags === "string"){ tags = Array(tags); }
+				CRM.Contact.autoRefresh(false);
+
+				// Visual delete
+				var ctags = $("textarea[name=tags]").val().split(', ');
+				ctags.forEach(function(t,i){
+					t = t.trim();
+					tags.forEach(function(d){
+						if(t == d){ ctags.splice(i, 1); }
+					});
+				});
+
+				ctags = ctags.join(', ');
+				$("textarea[name=tags]").val(ctags).html(ctags);
+				CRM.Contact.tags.render();
+
+				var id = CRM.Contact.getCurrentURL();
+				CRM.API.Delete("contact/" + id + "/tag", JSON.stringify(tags), function(d){
+					CRM.Contact.autoRefresh(true);
+				}, function(d){
+					if(d.status >= 400){
+						alert("Error!");
+					}
+				});
+			},
+
+			add: function(tags){
+				if(typeof tags === "string"){ tags = Array(tags); }
+			},
+
+			render: function(){
+				var tags = $("textarea[name=tags]").val().split(',');
+				if(tags.length > 0){
+					$("#contact-tags-list").empty();
+					var colors = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'];
+					tags.forEach(function(t){
+						if(t.trim().length <= 1){ return; }
+						var tag = $("<a></a>");
+						var color = (t.trim().length % colors.length);
+						tag.addClass("badge badge-" + colors[color]);
+						tag.prop('href', '#');
+						// warning and dark
+						if(color != 4 && color != 6){
+							tag.addClass("text-white");
+						}
+						tag.text(t.trim());
+						$("#contact-tags-list").append(tag);
+						$("#contact-tags-list").append(" ");
+					});
+				}
+			}
 		},
 		
 		load: function(id, hide){
@@ -361,6 +410,9 @@ var CRM = {
 		
 			$("#contact-tags-list").addClass("d-none");
 			$(".contact-tags-list.loading").removeClass("d-none");
+
+			// NOTE If editing and change to next client, it should hide.
+			$("#contact-tags-add").addClass("d-none");
 		},
 		
 		getCurrentURL: function(){

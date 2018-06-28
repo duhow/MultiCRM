@@ -128,6 +128,15 @@ class Functions extends CI_Model {
 		return array_column($query->result_array(), 'tag');
 	}
 
+	public function delete_contact_tags($id, $tags){
+		if(is_string($tags)){ $tags = [$tags]; }
+
+		return $this->db
+			->where('contactid', $id)
+			->where_in('tag', $tags)
+		->delete('contact_tags');
+	}
+
 	public function get_contact_tasks($id, $finished = FALSE){
 		if(!$finished){
 			$this->db->where('date_completed IS NULL');
