@@ -137,6 +137,20 @@ class Functions extends CI_Model {
 		->delete('contact_tags');
 	}
 
+	public function add_contact_tags($id, $tags){
+		if(is_string($tags)){ $tags = [$tags]; }
+
+		$inserts = array();
+		foreach($tags as $tag){
+			$inserts[] = [
+				'contactid' => $id,
+				'tag' => $tag
+			];
+		}
+
+		return $this->db->insert_batch('contact_tags', $inserts);
+	}
+
 	public function get_contact_tasks($id, $finished = FALSE){
 		if(!$finished){
 			$this->db->where('date_completed IS NULL');

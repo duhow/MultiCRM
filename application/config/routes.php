@@ -8,6 +8,7 @@ $route['contact/list'] = 'contact/list_contacts';
 $route['api/(:any)'] = 'api/index/$1';
 $route['api/(:any)/(:any)'] = 'api/$2';
 $route['api/(:any)/(:any)/(:any)'] = 'api/$2/$3';
+$route['api/(:any)/(:any)/(:any)/(:any)'] = 'api/$2/$3/$4';
 
 $route['default_controller'] = 'main';
 

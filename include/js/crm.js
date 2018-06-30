@@ -28,6 +28,19 @@ var CRM = {
 			});
 		},
 
+		Post: function(action, data, cbSuccess, cbError){
+			$.ajax({
+				url: CRM.API.URL() + action,
+				method: 'POST',
+				cache: false,
+				contentType: 'application/json',
+				data: data,
+				dataType: 'json',
+				success: cbSuccess,
+				error: cbError
+			});
+		},
+
 		Token: 'JzVuGfdeDArfNHSbKDWC3th1'
 	},
 
@@ -122,6 +135,57 @@ var CRM = {
 	},
 
 	Contact: {
+		initBindings: function(){
+			window.onpopstate = function (event) {
+				  if (event.state) {
+					CRM.Contact.load(CRM.Contact.getCurrentURL());
+				  }
+			}
+
+			$("textarea[name=tags]").change( function(){ CRM.Contact.tags.render() } );
+
+			// Display input new tag
+			$("#contact-tags").on('dblclick', function(e){
+				// Only on div, not tags.
+				if(e.target.tagName === "A"){ return; }
+				$("#contact-tags-add").toggleClass("d-none");
+				$("#contact-tags-add input").focus();
+			});
+
+			// Delete tag
+			$('body').on('dblclick', "#contact-tags-list a", function(e){
+				var tag = $(this).text();
+				CRM.Contact.tags.delete(tag);
+			});
+
+			// If keypress ENTER on input tag
+			$("#contact-tags-add input").on('keypress', function(e){
+				if(e.which == 13){
+					$("#contact-tags-add button").trigger('click');
+				}
+			});
+
+			// Add new tag
+			$("#contact-tags-add button").on('click', function(e){
+				var tag = $("#contact-tags-add input").val().trim();
+				if(tag.length < 1){ return; }
+				CRM.Contact.tags.add(tag);
+			});
+
+			// Navigation buttons
+			$("body").on('click', "button[data-action]", function(e){
+				var id = CRM.Contact.getCurrentURL();
+				if($(this).data('action') == "contact-prev"){
+					id = Math.max(id - 1, 1);
+				}else if($(this).data('action') == "contact-next"){
+					id = (id + 1);
+				}
+				window.history.pushState('contact-' + id, null, './' + id);
+				CRM.Contact.load(id);
+				CRM.Contact.autoRefresh(true);
+			});
+		},
+
 		updateMoments: function(){
 			var el, tz;
 			el = $("#contact-profile li span[data-type=birthday]");
@@ -333,12 +397,36 @@ var CRM = {
 				}, function(d){
 					if(d.status >= 400){
 						alert("Error!");
+					}else{
+						CRM.Contact.autoRefresh(true);
 					}
 				});
 			},
 
 			add: function(tags){
 				if(typeof tags === "string"){ tags = Array(tags); }
+				CRM.Contact.autoRefresh(false);
+
+				var ctags = $("textarea[name=tags]").val();
+				tags.forEach(function(tag){
+					if(ctags.toLowerCase().indexOf( tag.toLowerCase() ) >= 0){ return; }
+					ctags += tag + ", ";
+				});
+
+				$("textarea[name=tags]").val(ctags).html(ctags);
+				$("#contact-tags-add input").val("");
+				CRM.Contact.tags.render();
+
+				var id = CRM.Contact.getCurrentURL();
+				CRM.API.Post("contact/" + id + "/tag", JSON.stringify(tags), function(d){
+					CRM.Contact.autoRefresh(true);
+				}, function(d){
+					if(d.status >= 400){
+						alert("Error!");
+					}else{
+						CRM.Contact.autoRefresh(true);
+					}
+				});
 			},
 
 			render: function(){

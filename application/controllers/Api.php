@@ -63,6 +63,11 @@ class Api extends CI_Controller {
 		if($this->input->method(TRUE) == "DELETE" and is_numeric($id) and $type == "tag"){
 			return $this->contact_delete_tags($id);
 		}
+
+		// POST contact/id/tag
+		if($this->input->method(TRUE) == "POST" and is_numeric($id) and $type == "tag"){
+			return $this->contact_post_tags($id);
+		}
 	}
 
 	private function contact_delete_tags($id, $tags = NULL){
@@ -80,6 +85,31 @@ class Api extends CI_Controller {
 		}
 
 		$res = $this->functions->delete_contact_tags($id, $tags);
+
+		if(!$res){
+			http_response_code(500);
+			return FALSE;
+		}
+
+		if($this->db->affected_rows() == 0){ http_response_code(204); }
+		return TRUE;
+	}
+
+	private function contact_post_tags($id, $tags = NULL){
+		if(empty($tags)){ $tags = file_get_contents('php://input'); }
+		if(!$tags){
+			http_response_code(400);
+			return FALSE;
+		}
+
+		$tags = json_decode($tags);
+
+		if(!$tags or count($tags) == 0){
+			http_response_code(400);
+			return FALSE;
+		}
+
+		$res = $this->functions->add_contact_tags($id, $tags);
 
 		if(!$res){
 			http_response_code(500);
