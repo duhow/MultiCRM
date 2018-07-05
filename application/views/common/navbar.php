@@ -2,7 +2,7 @@
 <nav class="nav nav-redux flex-column nav-pills d-none d-sm-block">
 	<div class="row no-gutters">
 		<div class="col-md-12 col-xs-12">
-			<img class="img-fluid" src="http://via.placeholder.com/150x150">
+			<img class="img-fluid" src="//via.placeholder.com/50x50">
 		</div>
 		<div class="offset-md-1 col-md-6 col-xs-12 user">
 			Juan Peralto Lavaganzza
@@ -22,9 +22,11 @@
 	</a>
 </nav>
 <script>
+/*
 $(function(){
 	$(window).resize(function(){
 		$("nav.nav").height($("html").height());
 	}).trigger('resize');
 });
+*/
 </script>

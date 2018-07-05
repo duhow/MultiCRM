@@ -64,10 +64,16 @@ ul#contact-sources li:hover{
 
 .badge{ white-space: normal; }
 #contact-tags{ min-height: 50px; }
+#contact-tags-list .badge{ margin-right: 3px; }
 
 #contact-profile ul li .fa,
-#contact-sources .contact-source .fa{ min-width: 24px; }
+#contact-sources .contact-source .fa:first-child{ min-width: 24px; }
+#contact-sources .contact-source .fa:last-child{ min-width: 16px; text-align: center; margin-top: 4px; }
 #contact-sources .contact-source{ padding: 8px 20px; }
+
+#contact-tasks div input[type=checkbox]:checked + label{
+	text-decoration: line-through;
+}
 
 .text-separator::after{ content: ', '; }
 

@@ -135,35 +135,16 @@ class Api extends CI_Controller {
 		}
 
 		// TODO Add timezone based on country or manual set TZ.
-		$contact['contact'] = $contactinfo;
-
-		// ----------------------
-
-		$phones = $this->functions->get_contact_phones($id);
-		if($phones){
-			$contact['sources']['phone'] = $phones;
-		}
-		
-		// ----------------------
-
-		$emails = $this->functions->get_contact_emails($id);
-		if($emails){
-			$contact['sources']['email'] = $emails;
-		}
-		
-		// ----------------------
-
-		$tags = $this->functions->get_contact_tags($id);
-		if($tags){
-			$contact['tags'] = $tags;
-		}
-
-		// ----------------------
-
-		$tasks = $this->functions->get_contact_tasks($id);
-		if($tasks){
-			$contact['tasks'] = $tasks;
-		}
+		$contact = [
+			'contact' => $contactinfo,
+			'sources' => [
+				'phone' => $this->functions->get_contact_phones($id),
+				'email' => $this->functions->get_contact_emails($id)
+			],
+			'tags' => $this->functions->get_contact_tags($id),
+			'tasks' => $this->functions->get_contact_tasks($id),
+			'actions' => array()
+		];
 
 		// ----------------------
 
