@@ -208,7 +208,6 @@ var app = new Vue({
 		},
 		tagAdd: function(e){
 			this.form.tag.inputadd = this.form.tag.inputadd.trim();
-			console.log(this.form.tag.inputadd);
 			if(this.form.tag.inputadd.length < 1){ return; }
 			tags = new Array(this.form.tag.inputadd);
 			axios.post(CRM.API.URL() + 'contact/' + this.person.contact.id + '/tag', tags)
@@ -270,13 +269,11 @@ var app = new Vue({
 		},
 		phoneResolve: function(phone, ct){
 			var x = libphonenumber.parse(phone, ct);
-			console.log(x);
 			return (x.phone ? x : phone);
 		},
 		phoneFormat: function(phone, fmt){
 			if(typeof fmt === 'undefined'){ fmt = 'International'; }
 			var x = libphonenumber.format(phone, fmt);
-			console.log(x);
 			return x;
 		}
 	},
@@ -286,15 +283,11 @@ var app = new Vue({
 			else if(this.person.contact.gender == "F"){ return "Mujer"; }
 		}
 	},
-	created: function(){
-		// this.myInterval = setInterval(this.moment_format, 1000);
-	},
 	mounted: function(){
 		axios.get('https://raw.githubusercontent.com/mledoze/countries/master/dist/countries.json')
 		.then(function(r){
 			window.countries = r.data;
 		});
-		// this.contact = CRM.Contact.load(1);
 	}
 });
 
