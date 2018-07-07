@@ -43,13 +43,13 @@
 							<span data-type="gender">{{ resolveGender }}</span><span v-if="person.contact.gender && person.contact.birthdate">, </span>
 							<span v-show="person.contact.birthdate">
 								<span data-type="birthday">{{ person.contact.birthdate | moment(true) }}</span>
-								<span class="text-enclosing" data-type="birthdate">{{ person.contact.birthdate | moment_format("l") }}</span>
+								<span data-type="birthdate">({{ person.contact.birthdate | moment_format("l") }})</span>
 							</span>
 						</li>
 						<li v-show="person.contact.country">
 							<i class="fa fa-map-marker-alt"></i>
 							<span data-type="country">{{ person.contact.country | countryName }}</span>
-							<span class="text-enclosing" data-type="country-time" data-timezone="">{{ person.contact.country | countryTZ | moment_tz("HH:mm") }}</span>
+							<span data-type="country-time" data-timezone="">({{ person.contact.country | countryTZ | moment_tz("HH:mm") }})</span>
 						</li>
 						<li v-show="person.contact.id_card">
 							<i class="fa fa-id-card"></i>
@@ -63,15 +63,15 @@
 				
 				</div>
 				<ul id="contact-sources" class="list-group list-group-flush list-unstyled">
-					<li class="list-group-item" id="contact-tags" data-source-type="tags" @dblclick="form.tag.inputvisible = !form.tag.inputvisible">
+					<li class="list-group-item" id="contact-tags" data-source-type="tags" @dblclick="tagAddToggle">
 						<div id="contact-tags-list">
 							<span v-if="person.tags.length == 0">No hay etiquetas.</span>
-							<a v-for="(tag, idx) in person.tags" href="#" class="badge" :class="tagColor(idx)">{{ tag }}</a>
+							<a v-for="(tag, idx) in person.tags" href="#" class="badge" :class="tagColor(idx)" @dblclick="tagRemove">{{ tag }}</a>
 						</div>
 						<div id="contact-tags-add" class="input-group input-group-sm mt-2" v-show="form.tag.inputvisible">
-							<input type="text" class="form-control" placeholder="Etiqueta" maxlength="100">
+							<input type="text" class="form-control" placeholder="Etiqueta" maxlength="100" v-model="form.tag.inputadd" @keyup.enter="tagAdd">
 							<div class="input-group-append">
-								<button class="btn btn-outline-secondary" type="button">
+								<button class="btn btn-outline-secondary" type="button" @click="tagAdd">
 									<i class="fa fa-plus"></i>
 								</button>
 							</div>
@@ -84,7 +84,7 @@
 					</li>
 					<li class="list-group-item contact-source" v-if="person.sources.phone" v-for="source in person.sources.phone">
 						<i class="fa" :class="renderPhone(source.type)"></i>
-						<a target="_blank" :href="'sip:' + source.phone">{{ source.phone | intlPhone }}</a>
+						<a target="_blank" :href="'sip:' + source.phone">{{ source.phone | phoneResolve(source.country) | phoneFormat }}</a>
 						<i class="float-right fa" :class="[source.verified ? 'fa-check' : 'fa-question']"></i>
 					</li>
 				</ul>
@@ -150,7 +150,8 @@ var app = new Vue({
 		person: [],
 		form: {
 			tag: {
-				inputvisible: false
+				inputvisible: false,
+				inputadd: null
 			}
 		},
 		language: 'es',
@@ -197,6 +198,40 @@ var app = new Vue({
 				return ["fa-phone"];
 			}
 		},
+		tagAddToggle: function(e){
+			if(e.target.tagName !== "DIV" && e.target.tagName !== "LI"){ return; }
+			this.form.tag.inputvisible = !this.form.tag.inputvisible;
+			this.$nextTick(function(){
+				document.querySelector("#contact-tags-add input").focus();
+			});
+			return this.form.tag.inputvisible;
+		},
+		tagAdd: function(e){
+			this.form.tag.inputadd = this.form.tag.inputadd.trim();
+			console.log(this.form.tag.inputadd);
+			if(this.form.tag.inputadd.length < 1){ return; }
+			tags = new Array(this.form.tag.inputadd);
+			axios.post(CRM.API.URL() + 'contact/' + this.person.contact.id + '/tag', tags)
+			.then(function(d){
+				app.person.tags.push(app.form.tag.inputadd);
+				app.form.tag.inputadd = null;
+			})
+			.catch(function(d){
+
+			});
+		},
+		tagRemove: function(e){
+			var tags = [e.target.innerText];
+			axios.delete(CRM.API.URL() + 'contact/' + this.person.contact.id + '/tag', { data: tags })
+			.then(function(d){
+				var idx = app.person.tags.indexOf(e.target.innerText);
+				app.person.tags.splice(idx, 1);
+				this.form.tag.inputadd = e.target.innerText;
+			})
+			.catch(function(d){
+
+			});
+		},
 		tagColor: function(idx){
 			var colors = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'];
 			var t = this.person.tags[idx];
@@ -233,8 +268,16 @@ var app = new Vue({
 			}
 			return window.countries[idx].name.common;
 		},
-		intlPhone: function(phone){
-			return phone;
+		phoneResolve: function(phone, ct){
+			var x = libphonenumber.parse(phone, ct);
+			console.log(x);
+			return (x.phone ? x : phone);
+		},
+		phoneFormat: function(phone, fmt){
+			if(typeof fmt === 'undefined'){ fmt = 'International'; }
+			var x = libphonenumber.format(phone, fmt);
+			console.log(x);
+			return x;
 		}
 	},
 	computed: {
