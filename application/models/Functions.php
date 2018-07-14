@@ -33,6 +33,18 @@ class Functions extends CI_Model {
 		return $this->db->query($sql);
 	}
 
+	public function check_login(){
+		if(!$this->session->userdata('id')){ return FALSE; }
+		$id = (int) $this->session->userdata('id');
+
+		$query = $this->db
+			->where('id', $id)
+			->where('blocked', FALSE)
+		->get('user');
+
+		return ($query->num_rows() == 1);
+	}
+
 	public function log_exit($code, $type = NULL, $message = NULL){
 		http_response_code($code);
 		if($type and $message){

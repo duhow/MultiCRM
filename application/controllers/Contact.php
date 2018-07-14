@@ -3,12 +3,18 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Contact extends CI_Controller {
 
-	public function index(){
-		$this->load->view('welcome_message');
+	public function __construct(){
+		parent::__construct();
+
+		if($this->functions->check_login() !== TRUE){
+			redirect('logout');
+		}
 	}
 
-	public function view($id = NULL){
-		if($id === NULL){ redirect("../"); }
+	public function index(){ redirect('contact/list'); }
+
+	public function view(int $id = NULL){
+		if($id === NULL){ redirect('contact/list'); }
 		$data['title'] = 'Lista de contactos';
 		$data['css_files'] = ['base.css'];
 

@@ -2,6 +2,7 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 $route['login'] = 'main/login';
+$route['logout'] = 'main/logout';
 $route['contact/list'] = 'contact/list_contacts';
 
 // API, remove TOKEN from route.
